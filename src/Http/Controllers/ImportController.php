@@ -41,7 +41,7 @@ class ImportController
         $resources = $resources->filter(function ($resource) {
             $static_vars = (new \ReflectionClass((string) $resource))->getStaticProperties();
 
-            if(!isset($static_vars['canImportResource'])) {
+            if (!isset($static_vars['canImportResource'])) {
                 return true;
             }
 
@@ -72,13 +72,19 @@ class ImportController
 
     public function import(NovaRequest $request, $file)
     {
+        $use_validation = $request->input('use_validation');
+
         $resource_name = $request->input('resource');
         $request->route()->setParameter('resource', $resource_name);
 
         $resource = Nova::resourceInstanceForKey($resource_name);
         $attribute_map = $request->input('mappings');
         $attributes = $resource->creationFields($request)->pluck('attribute');
-        $rules = $this->extractValidationRules($request, $resource)->toArray();
+        if ($use_validation === true) {
+            $rules = $this->extractValidationRules($request, $resource)->toArray();
+        } else {
+            $rules = [];
+        }
         $model_class = get_class($resource->resource);
 
         $this->importer
@@ -89,7 +95,7 @@ class ImportController
             ->setModelClass($model_class)
             ->import($this->getFilePath($file), null);
 
-        if (! $this->importer->failures()->isEmpty() || ! $this->importer->errors()->isEmpty()) {
+        if (!$this->importer->failures()->isEmpty() || !$this->importer->errors()->isEmpty()) {
             return response()->json(['result' => 'failure', 'errors' => $this->importer->errors(), 'failures' => $this->importer->failures()]);
         }
 
@@ -100,7 +106,7 @@ class ImportController
     {
         return collect($resource::rulesForCreation($request))->mapWithKeys(function ($rule, $key) {
             foreach ($rule as $i => $r) {
-                if (! is_object($r)) {
+                if (!is_object($r)) {
                     continue;
                 }
 

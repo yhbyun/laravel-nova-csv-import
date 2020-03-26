@@ -45,6 +45,18 @@
                 </tbody>
             </table>
 
+            <div class="flex border-b border-40">
+                <div class="w-1/5 px-8 py-6">
+                    <label for="use_validation" class="inline-block text-80 pt-2 leading-tight">리소스 유효성 검사 규칙 사용</label>
+                </div>
+                <div class="py-6 px-8 w-4/5">
+                    <input v-model="use_validation" type="checkbox" class="checkbox mt-2" id="use_validation" name="use_validation">
+                    <div class="help-text help-text mt-2">
+                        CSV 헤더의 컬럼명이 리소스 컬럼명과 다르면 데이터 유효성 검사가 제대로 동작하지 않습니다.
+                    </div>
+                </div>
+            </div>
+
             <div class="bg-30 flex px-8 py-4">
                 <!--<button class="btn btn-default">&leftarrow; Cancel</button>-->
                 <button class="btn btn-default btn-primary" @click="runImport" :disabled="disabledImport" id="run-import">Import &rightarrow; </button>
@@ -80,6 +92,7 @@ export default {
             fields: [],
             resource: '',
             mappings: {},
+            use_validation: false,
         };
     },
     props: [
@@ -129,7 +142,8 @@ export default {
 
             let data = {
                 resource: this.resource,
-                mappings: this.mappings
+                mappings: this.mappings,
+                use_validation: this.use_validation,
             };
 
             Nova.request()
